@@ -29,24 +29,26 @@ public class BuyerController {
     }
 
     @GetMapping("/buyers/{id}")
-    public ResponseEntity<Buyer> getBuyerById(@PathVariable(value = "id") Integer id)
+    public ResponseEntity<Object> getBuyerById(@PathVariable(value = "id") Integer id)
             throws ResourceNotFoundException {
-        Buyer buyer;
-        if (hazelcastInstance != null) {
-            buyer = (Buyer) hazelcastInstance.getMap("data").get(id);
-        } else {
-            buyer = buyerRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Buyer not found for this id :: " + id));
+        Buyer buyer = (Buyer) hazelcastInstance.getMap("data").get(id);
+        if (buyer != null) {
+            return ResponseEntity.ok().body(buyer);
         }
+        buyer = buyerRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Buyer not found for this id :: " + id));
+        hazelcastInstance.getMap("data").put(buyer.getId(), buyer);
+
         return ResponseEntity.ok().body(buyer);
     }
 
     @PostMapping("/buyers")
     public Buyer createBuyer(@Valid @RequestBody Buyer buyer) {
+        buyerRepository.save(buyer);
         if (hazelcastInstance != null) {
             hazelcastInstance.getMap("data").put(buyer.getId(), buyer);
         }
-        return buyerRepository.save(buyer);
+        return buyer;
     }
 
 
