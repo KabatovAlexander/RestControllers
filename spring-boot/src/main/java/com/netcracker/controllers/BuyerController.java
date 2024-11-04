@@ -1,5 +1,6 @@
 package com.netcracker.controllers;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.netcracker.model.Buyer;
 import com.netcracker.repository.BuyerRepository;
 import com.netcracker.exception.ResourceNotFoundException;
@@ -7,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +17,11 @@ import java.util.Map;
 @RequestMapping("/rest")
 public class BuyerController {
 
-
     @Autowired
     BuyerRepository buyerRepository;
 
+    @Autowired
+    HazelcastInstance hazelcastInstance;
 
     @GetMapping("/buyers")
     public List<Buyer> getAllBuyers() {
@@ -29,13 +31,21 @@ public class BuyerController {
     @GetMapping("/buyers/{id}")
     public ResponseEntity<Buyer> getBuyerById(@PathVariable(value = "id") Integer id)
             throws ResourceNotFoundException {
-        Buyer buyer = buyerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Buyer not found for this id :: " + id));
+        Buyer buyer;
+        if (hazelcastInstance != null) {
+            buyer = (Buyer) hazelcastInstance.getMap("data").get(id);
+        } else {
+            buyer = buyerRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Buyer not found for this id :: " + id));
+        }
         return ResponseEntity.ok().body(buyer);
     }
 
     @PostMapping("/buyers")
     public Buyer createBuyer(@Valid @RequestBody Buyer buyer) {
+        if (hazelcastInstance != null) {
+            hazelcastInstance.getMap("data").put(buyer.getId(), buyer);
+        }
         return buyerRepository.save(buyer);
     }
 

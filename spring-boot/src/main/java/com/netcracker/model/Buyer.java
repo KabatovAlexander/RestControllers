@@ -1,7 +1,7 @@
 package com.netcracker.model;
 
 import lombok.Data;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "buyers")
@@ -19,6 +19,6 @@ public class Buyer {
     @Column(name = "region", nullable = false)
     private String region;
 
-    @Column(name = "discount", nullable = false)
+    @Column(name = "discount")
     private double discount;
 }
