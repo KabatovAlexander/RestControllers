@@ -18,7 +18,7 @@
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
         <java.version>18</java.version>
-        <hazelcast.version>5.5.0</hazelcast.version>
+        <hazelcast.version>5.7.0</hazelcast.version>
         <lombok.version>1.18.26</lombok.version>
         <org.asciidoctor.version>2.1.0</org.asciidoctor.version>
         <org.springframework.boot.version>3.1.0</org.springframework.boot.version>
